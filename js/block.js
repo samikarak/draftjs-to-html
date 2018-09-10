@@ -470,7 +470,7 @@ function getSectionMarkup(
   const entityInlineMarkup = [];
   const inlineStyleSections = getInlineStyleSections(
     block,
-    ['COLOR', 'BGCOLOR', 'FONTSIZE', 'FONTFAMILY', 'LINEHEIGHT', 'LETTERPSACING'],
+    ['COLOR', 'BGCOLOR', 'FONTSIZE', 'FONTFAMILY', 'LINEHEIGHT', 'LETTERSPACING'],
     section.start,
     section.end,
   );
