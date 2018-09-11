@@ -265,7 +265,9 @@ export function getStylesAtOffset(inlineStyles: Object, offset: number): Object 
   const styles = {};
   forEach(inlineStyles, (styleKey) => {
     if (!styleConfig[styleKey]) return;
-    styles[styleKey] = styleConfig[styleKey].markup ? true : inlineStyles[styleKey][offset];
+    if (inlineStyles[styleKey][offset]) {
+      styles[styleKey] = styleConfig[styleKey].markup ? true : inlineStyles[styleKey][offset];
+    }
   });
   // if (inlineStyles.COLOR[offset]) {
   //   styles.COLOR = inlineStyles.COLOR[offset];
