@@ -1,8 +1,62 @@
 import { forEach, isEmptyString } from './common';
 
 /**
-* Mapping block-type to corresponding html tag.
-*/
+ * Mapping styles to configs.
+ */
+const styleConfig: Object = {
+  BOLD: {
+    markup: 'strong',
+  },
+  ITALIC: {
+    markup: 'em',
+  },
+  UNDERLINE: {
+    markup: 'ins',
+  },
+  STRIKETHROUGH: {
+    markup: 'del',
+  },
+  CODE: {
+    markup: 'code',
+  },
+  SUPERSCRIPT: {
+    markup: 'sup',
+  },
+  SUBSCRIPT: {
+    markup: 'sub',
+  },
+  COLOR: {
+    // names: ['color'],
+    styleKey: 'color',
+  },
+  BGCOLOR: {
+    // names: ['bgcolor', 'bgColor', 'backgroundcolor', 'backgroundColor', 'background-color'],
+    styleKey: 'background-color',
+  },
+  FONTSIZE: {
+    // names: ['fontsize', 'fontSize', 'font-size'],
+    styleKey: 'font-size',
+    unit: 'px',
+  },
+  FONTFAMILY: {
+    // names: ['fontfamily', 'fontFamily', 'font-family'],
+    styleKey: 'font-family',
+  },
+  LINEHEIGHT: {
+    // names: ['lineheight', 'lineHeight', 'line-height'],
+    styleKey: 'line-height',
+    unit: 'px',
+  },
+  LETTERSPACING: {
+    // names: ['letterspacing', 'letterSpacing', 'letter-spacing'],
+    styleKey: 'letter-spacing',
+    unit: 'px',
+  },
+};
+
+/**
+ * Mapping block-type to corresponding html tag.
+ */
 const blockTypesMapping: Object = {
   unstyled: 'p',
   'header-one': 'h1',
@@ -142,42 +196,62 @@ function isAtomicEntityBlock(block: Object): boolean {
 */
 function getStyleArrayForBlock(block: Object): Object {
   const { text, inlineStyleRanges } = block;
-  const inlineStyles = {
-    BOLD: new Array(text.length),
-    ITALIC: new Array(text.length),
-    UNDERLINE: new Array(text.length),
-    STRIKETHROUGH: new Array(text.length),
-    CODE: new Array(text.length),
-    SUPERSCRIPT: new Array(text.length),
-    SUBSCRIPT: new Array(text.length),
-    COLOR: new Array(text.length),
-    BGCOLOR: new Array(text.length),
-    FONTSIZE: new Array(text.length),
-    FONTFAMILY: new Array(text.length),
-    LINEHEIGHT: new Array(text.length),
-    LETTERSPACING: new Array(text.length),
+  let inlineStyles = {
     length: text.length,
   };
+  forEach(styleConfig, (styleKey) => {
+    inlineStyles[styleKey] = new Array(text.length);
+  })
+  // const inlineStyles = {
+  //   BOLD: new Array(text.length),
+  //   ITALIC: new Array(text.length),
+  //   UNDERLINE: new Array(text.length),
+  //   STRIKETHROUGH: new Array(text.length),
+  //   CODE: new Array(text.length),
+  //   SUPERSCRIPT: new Array(text.length),
+  //   SUBSCRIPT: new Array(text.length),
+  //   COLOR: new Array(text.length),
+  //   BGCOLOR: new Array(text.length),
+  //   FONTSIZE: new Array(text.length),
+  //   FONTFAMILY: new Array(text.length),
+  //   LINEHEIGHT: new Array(text.length),
+  //   LETTERSPACING: new Array(text.length),
+  //   length: text.length,
+  // };
   if (inlineStyleRanges && inlineStyleRanges.length > 0) {
     inlineStyleRanges.forEach((range) => {
       const { offset } = range;
       const length = offset + range.length;
       for (let i = offset; i < length; i += 1) {
-        if (range.style.indexOf('color-') === 0) {
-          inlineStyles.COLOR[i] = range.style.substring(6);
-        } else if (range.style.indexOf('bgcolor-') === 0) {
-          inlineStyles.BGCOLOR[i] = range.style.substring(8);
-        } else if (range.style.indexOf('fontsize-') === 0) {
-          inlineStyles.FONTSIZE[i] = range.style.substring(9);
-        } else if (range.style.indexOf('fontfamily-') === 0) {
-          inlineStyles.FONTFAMILY[i] = range.style.substring(11);
-        } else if (range.style.indexOf('lineheight-') === 0) {
-          inlineStyles.LINEHEIGHT[i] = range.style.substring(11);
-        } else if (range.style.indexOf('letterspacing-') === 0) {
-          inlineStyles.LETTERSPACING[i] = range.style.substring(14);
-        } else if (inlineStyles[range.style]) {
+        let fulfilled = false;
+        forEach(styleConfig, (styleKey, config) => {
+          const hasMarkup = !!config.markup;
+          if (!hasMarkup) {
+            const keyLowerCase = styleKey.toLowerCase();
+            if (range.style.indexOf(`${keyLowerCase}-`) === 0){
+              inlineStyles[styleKey][i] = range.style.substring(keyLowerCase.length + 1);
+              fulfilled = true;
+            }
+          }
+        });
+        if (!fulfilled && inlineStyles[range.style]) {
           inlineStyles[range.style][i] = true;
         }
+        // if (range.style.indexOf('color-') === 0) {
+        //   inlineStyles.COLOR[i] = range.style.substring(6);
+        // } else if (range.style.indexOf('bgcolor-') === 0) {
+        //   inlineStyles.BGCOLOR[i] = range.style.substring(8);
+        // } else if (range.style.indexOf('fontsize-') === 0) {
+        //   inlineStyles.FONTSIZE[i] = range.style.substring(9);
+        // } else if (range.style.indexOf('fontfamily-') === 0) {
+        //   inlineStyles.FONTFAMILY[i] = range.style.substring(11);
+        // } else if (range.style.indexOf('lineheight-') === 0) {
+        //   inlineStyles.LINEHEIGHT[i] = range.style.substring(11);
+        // } else if (range.style.indexOf('letterspacing-') === 0) {
+        //   inlineStyles.LETTERSPACING[i] = range.style.substring(14);
+        // } else if (inlineStyles[range.style]) {
+        //   inlineStyles[range.style][i] = true;
+        // }
       }
     });
   }
@@ -189,45 +263,49 @@ function getStyleArrayForBlock(block: Object): Object {
 */
 export function getStylesAtOffset(inlineStyles: Object, offset: number): Object {
   const styles = {};
-  if (inlineStyles.COLOR[offset]) {
-    styles.COLOR = inlineStyles.COLOR[offset];
-  }
-  if (inlineStyles.BGCOLOR[offset]) {
-    styles.BGCOLOR = inlineStyles.BGCOLOR[offset];
-  }
-  if (inlineStyles.FONTSIZE[offset]) {
-    styles.FONTSIZE = inlineStyles.FONTSIZE[offset];
-  }
-  if (inlineStyles.FONTFAMILY[offset]) {
-    styles.FONTFAMILY = inlineStyles.FONTFAMILY[offset];
-  }
-  if (inlineStyles.LINEHEIGHT[offset]) {
-    styles.LINEHEIGHT = inlineStyles.LINEHEIGHT[offset];
-  }
-  if (inlineStyles.LETTERSPACING[offset]) {
-    styles.LETTERSPACING = inlineStyles.LETTERSPACING[offset];
-  }
-  if (inlineStyles.UNDERLINE[offset]) {
-    styles.UNDERLINE = true;
-  }
-  if (inlineStyles.ITALIC[offset]) {
-    styles.ITALIC = true;
-  }
-  if (inlineStyles.BOLD[offset]) {
-    styles.BOLD = true;
-  }
-  if (inlineStyles.STRIKETHROUGH[offset]) {
-    styles.STRIKETHROUGH = true;
-  }
-  if (inlineStyles.CODE[offset]) {
-    styles.CODE = true;
-  }
-  if (inlineStyles.SUBSCRIPT[offset]) {
-    styles.SUBSCRIPT = true;
-  }
-  if (inlineStyles.SUPERSCRIPT[offset]) {
-    styles.SUPERSCRIPT = true;
-  }
+  forEach(inlineStyles, (styleKey) => {
+    if (!styleConfig[styleKey]) return;
+    styles[styleKey] = styleConfig[styleKey].markup ? true : inlineStyles[styleKey][offset];
+  });
+  // if (inlineStyles.COLOR[offset]) {
+  //   styles.COLOR = inlineStyles.COLOR[offset];
+  // }
+  // if (inlineStyles.BGCOLOR[offset]) {
+  //   styles.BGCOLOR = inlineStyles.BGCOLOR[offset];
+  // }
+  // if (inlineStyles.FONTSIZE[offset]) {
+  //   styles.FONTSIZE = inlineStyles.FONTSIZE[offset];
+  // }
+  // if (inlineStyles.FONTFAMILY[offset]) {
+  //   styles.FONTFAMILY = inlineStyles.FONTFAMILY[offset];
+  // }
+  // if (inlineStyles.LINEHEIGHT[offset]) {
+  //   styles.LINEHEIGHT = inlineStyles.LINEHEIGHT[offset];
+  // }
+  // if (inlineStyles.LETTERSPACING[offset]) {
+  //   styles.LETTERSPACING = inlineStyles.LETTERSPACING[offset];
+  // }
+  // if (inlineStyles.UNDERLINE[offset]) {
+  //   styles.UNDERLINE = true;
+  // }
+  // if (inlineStyles.ITALIC[offset]) {
+  //   styles.ITALIC = true;
+  // }
+  // if (inlineStyles.BOLD[offset]) {
+  //   styles.BOLD = true;
+  // }
+  // if (inlineStyles.STRIKETHROUGH[offset]) {
+  //   styles.STRIKETHROUGH = true;
+  // }
+  // if (inlineStyles.CODE[offset]) {
+  //   styles.CODE = true;
+  // }
+  // if (inlineStyles.SUBSCRIPT[offset]) {
+  //   styles.SUBSCRIPT = true;
+  // }
+  // if (inlineStyles.SUPERSCRIPT[offset]) {
+  //   styles.SUPERSCRIPT = true;
+  // }
   return styles;
 }
 
@@ -255,21 +333,23 @@ export function sameStyleAsPrevious(
 * Function returns html for text depending on inline style tags applicable to it.
 */
 export function addInlineStyleMarkup(style: string, content: string): string {
-  if (style === 'BOLD') {
-    return `<strong>${content}</strong>`;
-  } else if (style === 'ITALIC') {
-    return `<em>${content}</em>`;
-  } else if (style === 'UNDERLINE') {
-    return `<ins>${content}</ins>`;
-  } else if (style === 'STRIKETHROUGH') {
-    return `<del>${content}</del>`;
-  } else if (style === 'CODE') {
-    return `<code>${content}</code>`;
-  } else if (style === 'SUPERSCRIPT') {
-    return `<sup>${content}</sup>`;
-  } else if (style === 'SUBSCRIPT') {
-    return `<sub>${content}</sub>`;
-  }
+  const markup = styleConfig[style] && styleConfig[style].markup;
+  if (markup) return `<${markup}>${content}</${markup}>`;
+  // if (style === 'BOLD') {
+  //   return `<strong>${content}</strong>`;
+  // } else if (style === 'ITALIC') {
+  //   return `<em>${content}</em>`;
+  // } else if (style === 'UNDERLINE') {
+  //   return `<ins>${content}</ins>`;
+  // } else if (style === 'STRIKETHROUGH') {
+  //   return `<del>${content}</del>`;
+  // } else if (style === 'CODE') {
+  //   return `<code>${content}</code>`;
+  // } else if (style === 'SUPERSCRIPT') {
+  //   return `<sup>${content}</sup>`;
+  // } else if (style === 'SUBSCRIPT') {
+  //   return `<sub>${content}</sub>`;
+  // }
   return content;
 }
 
@@ -301,30 +381,46 @@ function getSectionText(text: Array<string>): string {
 * Function returns html for text depending on inline style tags applicable to it.
 */
 export function addStylePropertyMarkup(styles: Object, text: string): string {
-  if (styles && (styles.COLOR || styles.BGCOLOR || styles.FONTSIZE || styles.FONTFAMILY || styles.LINEHEIGHT || styles.LETTERSPACING)) {
-    let styleString = 'style="';
-    if (styles.COLOR) {
-      styleString += `color: ${styles.COLOR};`;
+
+  let styleStr = '';
+  forEach(styles, (key, val) => {
+    const hasMarkup = styleConfig[key] && styleConfig[key].markup;
+    if (!hasMarkup && styleConfig[key]) {
+      if (!styleStr.length) styleStr = 'style="';
+      const { unit } = styleConfig[key];
+      styleStr += `${styleConfig[key].styleKey}: ${val}${/^\\d+$/.test(val) && unit ? unit : ''};`;
     }
-    if (styles.BGCOLOR) {
-      styleString += `background-color: ${styles.BGCOLOR};`;
-    }
-    if (styles.FONTSIZE) {
-      styleString += `font-size: ${styles.FONTSIZE}${/^\d+$/.test(styles.FONTSIZE) ? 'px' : ''};`;
-    }
-    if (styles.FONTFAMILY) {
-      styleString += `font-family: ${styles.FONTFAMILY};`;
-    }
-    if (styles.LINEHEIGHT) {
-      styleString += `line-height: ${styles.LINEHEIGHT}${/^\d+$/.test(styles.LINEHEIGHT) ? 'px' : ''};`;
-    }
-    if (styles.LETTERSPACING) {
-      styleString += `letter-spacing: ${styles.LETTERSPACING}${/^\d+$/.test(styles.LETTERSPACING) ? 'px' : ''};`;
-    }
-    styleString += '"';
-    return `<span ${styleString}>${text}</span>`;
+  })
+  if (styleStr.length) {
+    styleStr += '"';
+    return `<span ${styleStr}>${text}</span>`;
   }
   return text;
+
+  // if (styles && (styles.COLOR || styles.BGCOLOR || styles.FONTSIZE || styles.FONTFAMILY || styles.LINEHEIGHT || styles.LETTERSPACING)) {
+  //   let styleString = 'style="';
+  //   if (styles.COLOR) {
+  //     styleString += `color: ${styles.COLOR};`;
+  //   }
+  //   if (styles.BGCOLOR) {
+  //     styleString += `background-color: ${styles.BGCOLOR};`;
+  //   }
+  //   if (styles.FONTSIZE) {
+  //     styleString += `font-size: ${styles.FONTSIZE}${/^\d+$/.test(styles.FONTSIZE) ? 'px' : ''};`;
+  //   }
+  //   if (styles.FONTFAMILY) {
+  //     styleString += `font-family: ${styles.FONTFAMILY};`;
+  //   }
+  //   if (styles.LINEHEIGHT) {
+  //     styleString += `line-height: ${styles.LINEHEIGHT}${/^\d+$/.test(styles.LINEHEIGHT) ? 'px' : ''};`;
+  //   }
+  //   if (styles.LETTERSPACING) {
+  //     styleString += `letter-spacing: ${styles.LETTERSPACING}${/^\d+$/.test(styles.LETTERSPACING) ? 'px' : ''};`;
+  //   }
+  //   styleString += '"';
+  //   return `<span ${styleString}>${text}</span>`;
+  // }
+  // return text;
 }
 
 /**
@@ -447,7 +543,12 @@ function getStyleTagSectionMarkup(styleSection: Object): string {
 like color, background-color, font-size are applicable.
 */
 function getInlineStyleSectionMarkup(block: Object, styleSection: Object): string {
-  const styleTagSections = getInlineStyleSections(block, ['BOLD', 'ITALIC', 'UNDERLINE', 'STRIKETHROUGH', 'CODE', 'SUPERSCRIPT', 'SUBSCRIPT'], styleSection.start, styleSection.end);
+  let keysWithMarkup = [];
+  forEach(styleConfig, (styleKey) => {
+    if (styleConfig[styleKey].markup) keysWithMarkup.push(styleKey);
+  });
+  const styleTagSections = getInlineStyleSections(block, keysWithMarkup, styleSection.start, styleSection.end);
+  // const styleTagSections = getInlineStyleSections(block, ['BOLD', 'ITALIC', 'UNDERLINE', 'STRIKETHROUGH', 'CODE', 'SUPERSCRIPT', 'SUBSCRIPT'], styleSection.start, styleSection.end);
   let styleSectionText = '';
   styleTagSections.forEach((stylePropertySection) => {
     styleSectionText += getStyleTagSectionMarkup(stylePropertySection);
@@ -468,9 +569,14 @@ function getSectionMarkup(
   customEntityTransform: Function,
 ): string {
   const entityInlineMarkup = [];
+  let keysWithNoMarkup = [];
+  forEach(styleConfig, (styleKey) => {
+    if (!styleConfig[styleKey].markup) keysWithNoMarkup.push(styleKey);
+  });
   const inlineStyleSections = getInlineStyleSections(
     block,
-    ['COLOR', 'BGCOLOR', 'FONTSIZE', 'FONTFAMILY', 'LINEHEIGHT', 'LETTERSPACING'],
+    keysWithNoMarkup,
+    // ['COLOR', 'BGCOLOR', 'FONTSIZE', 'FONTFAMILY', 'LINEHEIGHT', 'LETTERSPACING'],
     section.start,
     section.end,
   );
