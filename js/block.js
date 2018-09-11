@@ -316,7 +316,7 @@ export function addStylePropertyMarkup(styles: Object, text: string): string {
       styleString += `font-family: ${styles.FONTFAMILY};`;
     }
     if (styles.LINEHEIGHT) {
-      styleString += `line-height: ${styles.LINEHEIGHT}${/^\d+$/.test(styles.LETTERSPACING) ? 'px' : ''};`;
+      styleString += `line-height: ${styles.LINEHEIGHT}${/^\d+$/.test(styles.LINEHEIGHT) ? 'px' : ''};`;
     }
     if (styles.LETTERSPACING) {
       styleString += `letter-spacing: ${styles.LETTERSPACING}${/^\d+$/.test(styles.LETTERSPACING) ? 'px' : ''};`;
