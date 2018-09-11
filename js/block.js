@@ -301,7 +301,7 @@ function getSectionText(text: Array<string>): string {
 * Function returns html for text depending on inline style tags applicable to it.
 */
 export function addStylePropertyMarkup(styles: Object, text: string): string {
-  if (styles && (styles.COLOR || styles.BGCOLOR || styles.FONTSIZE || styles.FONTFAMILY)) {
+  if (styles && (styles.COLOR || styles.BGCOLOR || styles.FONTSIZE || styles.FONTFAMILY || styles.LINEHEIGHT || styles.LETTERSPACING)) {
     let styleString = 'style="';
     if (styles.COLOR) {
       styleString += `color: ${styles.COLOR};`;
