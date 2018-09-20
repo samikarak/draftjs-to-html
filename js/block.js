@@ -29,6 +29,10 @@ const styleConfig: Object = {
     // names: ['color'],
     styleKey: 'color',
   },
+  MARGINLEFT: {
+    // names: ['marginleft', ,'marginLeft', 'margin-left'],
+    styleKey: 'margin-left',
+  },
   BGCOLOR: {
     // names: ['bgcolor', 'bgColor', 'backgroundcolor', 'backgroundColor', 'background-color'],
     styleKey: 'background-color',
@@ -74,6 +78,7 @@ const blockTypesMapping: Object = {
   'ordered-list-item': 'ol',
   blockquote: 'blockquote',
   code: 'pre',
+  paragraph: 'p',
 };
 
 /**
