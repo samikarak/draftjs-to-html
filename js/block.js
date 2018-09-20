@@ -33,7 +33,7 @@ const styleConfig: Object = {
     // names: ['marginleft', ,'marginLeft', 'margin-left'],
     styleKey: 'margin-left',
   },
-  BGCOLOR: {
+  BACKGROUNDCOLOR: {
     // names: ['bgcolor', 'bgColor', 'backgroundcolor', 'backgroundColor', 'background-color'],
     styleKey: 'background-color',
   },
