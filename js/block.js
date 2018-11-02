@@ -29,6 +29,7 @@ const styleConfig: Object = {
     // names: ['color'],
     styleKey: 'color',
   },
+  // NOT REUQIRED ANYMORE
   MARGINLEFT: {
     // names: ['marginleft', ,'marginLeft', 'margin-left'],
     styleKey: 'margin-left',
@@ -288,7 +289,7 @@ function getSectionText(text: Array<string>): string {
     const chars = text.map((ch) => {
       switch (ch) {
         case '\n':
-          return '<br>';
+          return '<br/>';
         case '&':
           return '&amp;';
         case '<':
@@ -301,6 +302,10 @@ function getSectionText(text: Array<string>): string {
     });
     return chars.join('');
   }
+  // else if (text && text.length === 0) {
+  //   // add line break if section is empty
+  //   return '<br/>';
+  // }
   return '';
 }
 
@@ -503,7 +508,7 @@ export function getBlockInnerMarkup(
   hashtagConfig: Object,
   customEntityTransform: Function,
 ): string {
-  const blockMarkup = [];
+  const blockMarkupArr = [];
   const sections = getSections(block, hashtagConfig);
   sections.forEach((section, index) => {
     let sectionText =
@@ -514,9 +519,9 @@ export function getBlockInnerMarkup(
     if (index === sections.length - 1) {
       sectionText = trimTrailingZeros(sectionText);
     }
-    blockMarkup.push(sectionText);
+    blockMarkupArr.push(sectionText);
   });
-  return blockMarkup.join('');
+  return blockMarkupArr.join('') || '<br/>';
 }
 
 /**
