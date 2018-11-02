@@ -498,6 +498,13 @@ function getSectionMarkup(
   return sectionText;
 }
 
+function emptyBlockMarkup(markup){
+  const removeTagsMarkup = markup
+    .replace(/<(\/)?\s*(\w+)[^>]*>/g,'')
+    .replace(/\s+/g,'');
+  return !removeTagsMarkup.length;
+}
+
 /**
 * Function will return the markup for block preserving the inline styles and
 * special characters like newlines or blank spaces.
@@ -521,7 +528,10 @@ export function getBlockInnerMarkup(
     }
     blockMarkupArr.push(sectionText);
   });
-  return blockMarkupArr.join('') || '<br/>';
+  let markup = blockMarkupArr.join('');
+  const addLineBreak = emptyBlockMarkup(markup);
+  if (addLineBreak) markup = markup + '<br/>';
+  return markup;
 }
 
 /**
